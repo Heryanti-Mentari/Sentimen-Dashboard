@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard Sentimen JKT48</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  </head>
+  <body class="bg-gray-50 p-6 font-sans">
+    <!-- Header -->
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold">📊 Dashboard Analisis Sentimen Fanbase JKT48</h1>
+      <p class="text-gray-600 text-sm mt-1">Data bersifat publik & telah dianonimkan untuk menjaga etika dan privasi.</p>
+    </header>
+
+    <!-- Filter -->
+    <form method="GET" action="/dashboard" class="bg-white rounded shadow p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+      <input type="date" name="start" class="border p-2 rounded w-full" aria-label="Tanggal mulai" />
+      <input type="date" name="end" class="border p-2 rounded w-full" aria-label="Tanggal akhir" />
+      <select name="platform" class="border p-2 rounded w-full" aria-label="Pilih platform">
+        <option value="all">Semua Platform</option>
+        <option value="Twitter">Twitter</option>
+        <option value="Instagram">Instagram</option>
+      </select>
+      <select name="sentimen" class="border p-2 rounded w-full" aria-label="Pilih sentimen">
+        <option value="all">Semua Sentimen</option>
+        <option value="positif">Positif</option>
+        <option value="netral">Netral</option>
+        <option value="negatif">Negatif</option>
+      </select>
+      <div class="md:col-span-4">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full md:w-auto hover:bg-blue-700 transition">🔍 Terapkan Filter</button>
+      </div>
+    </form>
+
+    <!-- Tombol Ambil Data dari Platform -->
+    <form method="POST" action="/scrape" class="bg-white rounded shadow p-4 mb-6 flex flex-wrap gap-4 items-center">
+      <label for="platform-select" class="text-sm font-medium">Ambil data dari:</label>
+      <select id="platform-select" name="platform" class="border p-2 rounded w-full md:w-auto" aria-label="Pilih platform untuk scraping">
+        <option value="twitter">Twitter</option>
+        <option value="instagram">Instagram</option>
+        <option value="semua">Semua</option>
+      </select>
+      <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded w-full md:w-auto hover:bg-purple-700 transition">📥 Ambil Data</button>
+    </form>
+
+    <!-- Visualisasi -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- Bar Chart -->
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">📊 Grafik Jumlah Sentimen</h2>
+        <canvas id="barChart" aria-label="Grafik jumlah sentimen" role="img"></canvas>
+      </div>
+
+      <!-- Pie Chart -->
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">🧁 Proporsi Sentimen</h2>
+        <canvas id="pieChart" aria-label="Diagram proporsi sentimen" role="img"></canvas>
+      </div>
+    </div>
+
+    <!-- Word Cloud & Tren -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- Word Cloud -->
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">☁️ Word Cloud</h2>
+        <img src="/static/wordcloud.png" alt="Word Cloud yang menampilkan kata-kata populer" class="w-full rounded" loading="lazy" />
+      </div>
+
+      <!-- Grafik Tren -->
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">📈 Tren Sentimen Harian</h2>
+        <img src="/static/trend.png" alt="Grafik tren sentimen harian" class="w-full rounded" loading="lazy" />
+      </div>
+    </div>
+
+    <!-- Tombol Aksi -->
+    <div class="flex flex-wrap gap-4">
+      <a href="/detail" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">📋 Lihat Detail Data</a>
+      <a href="/export/csv" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 transition">📥 Ekspor CSV</a>
+      <a href="/export/pdf" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">🧾 Ekspor PDF</a>
+      <a href="/update-data" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">🔄 Update Data</a>
+      <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">🚪 Logout</a>
+    </div>
+
+    <!-- Script Chart.js -->
+    <script>
+      // Data harus diberikan dari backend template engine (misal Flask/Jinja2)
+      // Contoh: render_template('dashboard.html', positif=10, netral=5, negatif=3)
+      const positif = {{ positif | default(0) }};
+      const netral = {{ netral | default(0) }};
+      const negatif = {{ negatif | default(0) }};
+
+      const barCtx = document.getElementById('barChart').getContext('2d');
+      new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Positif', 'Netral', 'Negatif'],
+          datasets: [{
+            label: 'Jumlah Sentimen',
+            data: [positif, netral, negatif],
+            backgroundColor: ['#34d399', '#facc15', '#f87171']
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+
+      const pieCtx = document.getElementById('pieChart').getContext('2d');
+      new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Positif', 'Netral', 'Negatif'],
+          datasets: [{
+            data: [positif, netral, negatif],
+            backgroundColor: ['#34d399', '#facc15', '#f87171']
+          }]
+        },
+        options: {
+          responsive: true
+        }
+      });
+    </script>
+  </body>
+</html>
