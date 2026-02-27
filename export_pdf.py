@@ -1,3 +1,18 @@
+"""
+export_pdf.py — Generator laporan PDF untuk Dashboard Sentimen JKT48
+=====================================================================
+Perbaikan dari versi sebelumnya:
+  - Kode level modul dipindah ke fungsi generate_pdf() agar bisa di-import
+    tanpa langsung menjalankan proses (sebelumnya berbahaya jika di-import)
+  - Font Unicode (DejaVu) menggantikan Arial agar karakter non-Latin aman
+  - Validasi keberadaan file gambar sebelum di-embed (tidak crash)
+  - Baca statistik langsung dari hasil.csv dan tampilkan di PDF
+  - Header & footer per halaman (nomor halaman)
+  - Semua path pakai pathlib.Path (lintas OS)
+  - Logging menggantikan print
+  - Return True/False sehingga pemanggil tahu berhasil/gagal
+"""
+
 import csv
 import logging
 from datetime import datetime
@@ -65,11 +80,11 @@ class LaporanPDF(FPDF):
         self.set_font(self._font_family, "B", 15)
         self.set_text_color(30, 30, 40)
         self.set_y(12)
-        self.cell(0, 8, "Laporan Analisis Sentimen Fanbase JKT48", align="C", ln=True)
+        self.cell(0, 8, "Laporan Analisis Sentimen Fanbase JKT48", align="C", new_x="LMARGIN", new_y="NEXT")
 
         self.set_font(self._font_family, "", 9)
         self.set_text_color(140, 140, 160)
-        self.cell(0, 6, f"Dibuat: {self.generated_at}", align="C", ln=True)
+        self.cell(0, 6, f"Dibuat: {self.generated_at}", align="C", new_x="LMARGIN", new_y="NEXT")
         self.ln(4)
 
     def footer(self):
@@ -80,7 +95,7 @@ class LaporanPDF(FPDF):
         self.set_font(self._font_family, "", 8)
         self.set_text_color(160, 160, 175)
         self.cell(0, 8,
-                  f"Halaman {self.page_no()}/{{nb}} — Dashboard Sentimen JKT48",
+                  f"Halaman {self.page_no()}/{{nb}} - Dashboard Sentimen JKT48",
                   align="C")
 
     # ── Helpers ───────────────────────────────────────────────────────────────
@@ -88,7 +103,7 @@ class LaporanPDF(FPDF):
     def section_title(self, title: str):
         self.set_font(self._font_family, "B", 13)
         self.set_text_color(232, 68, 90)
-        self.cell(0, 8, title, ln=True)
+        self.cell(0, 8, title, new_x="LMARGIN", new_y="NEXT")
 
         # Garis bawah tipis
         x, y = self.get_x(), self.get_y()
@@ -111,7 +126,7 @@ class LaporanPDF(FPDF):
         self.cell(80, 7, label)
         self.set_font(self._font_family, "B", 10)
         self.set_text_color(*color)
-        self.cell(0, 7, value, ln=True)
+        self.cell(0, 7, value, new_x="LMARGIN", new_y="NEXT")
         self.set_text_color(30, 30, 40)
 
     def safe_image(self, image_path: Path, w: float = 180, label: str = ""):
@@ -129,8 +144,8 @@ class LaporanPDF(FPDF):
         self.set_text_color(180, 180, 190)
         placeholder = f"[Gambar tidak tersedia: {image_path.name}]"
         if label:
-            placeholder = f"[{label} — file tidak ditemukan: {image_path.name}]"
-        self.cell(0, 8, placeholder, ln=True)
+            placeholder = f"[{label} - file tidak ditemukan: {image_path.name}]"
+        self.cell(0, 8, placeholder, new_x="LMARGIN", new_y="NEXT")
         self.ln(4)
         self.set_text_color(30, 30, 40)
         logger.warning("File gambar tidak ditemukan: %s", image_path)
@@ -165,7 +180,7 @@ def generate_pdf() -> bool:
     else:
         logger.warning("CSV tidak ditemukan, statistik akan kosong.")
 
-    pct = lambda n: f"{(n / stats['total'] * 100):.1f}%" if stats["total"] > 0 else "—"
+    pct = lambda n: f"{(n / stats['total'] * 100):.1f}%" if stats["total"] > 0 else "-"
 
     # ── Buat PDF ──────────────────────────────────────────────────────────
     try:
@@ -191,7 +206,7 @@ def generate_pdf() -> bool:
         if platform_counts:
             pdf.ln(2)
             for platform, count in platform_counts.items():
-                pdf.stat_row(f"  Platform — {platform} :", str(count))
+                pdf.stat_row(f"  Platform - {platform} :", str(count))
 
         pdf.ln(4)
 
