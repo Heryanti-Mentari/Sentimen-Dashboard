@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 — Halaman Tidak Ditemukan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg:      #0f1117;
+        --surface: #1a1d27;
+        --border:  #2e3348;
+        --accent:  #e8445a;
+        --text:    #f0f2f8;
+        --muted:   #8892b0;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Dekoratif orbs */
+      body::before, body::after {
+        content: '';
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(100px);
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::before {
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(232,68,90,0.12) 0%, transparent 70%);
+        top: -120px; left: -120px;
+        animation: drift 14s ease-in-out infinite alternate;
+      }
+      body::after {
+        width: 380px; height: 380px;
+        background: radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%);
+        bottom: -80px; right: -80px;
+        animation: drift 18s ease-in-out infinite alternate-reverse;
+      }
+
+      @keyframes drift {
+        from { transform: translate(0, 0); }
+        to   { transform: translate(40px, 30px); }
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 480px;
+        animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+      }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .code {
+        font-size: 7rem;
+        font-weight: 800;
+        line-height: 1;
+        background: linear-gradient(135deg, var(--accent) 0%, #f97316 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -4px;
+        margin-bottom: 16px;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      .icon {
+        font-size: 3rem;
+        margin-bottom: 16px;
+        display: block;
+        animation: wobble 3s ease-in-out infinite;
+      }
+
+      @keyframes wobble {
+        0%, 100% { transform: rotate(-4deg); }
+        50%       { transform: rotate(4deg); }
+      }
+
+      h1 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 10px;
+      }
+
+      p {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 32px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 22px;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        font-family: inherit;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.15s;
+      }
+      .btn:hover { opacity: 0.85; transform: translateY(-2px); }
+
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-ghost   {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+      .divider {
+        width: 48px; height: 3px;
+        background: linear-gradient(90deg, var(--accent), #f97316);
+        border-radius: 999px;
+        margin: 20px auto 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <span class="icon">🔍</span>
+      <div class="code">404</div>
+      <div class="divider"></div>
+      <h1>Halaman Tidak Ditemukan</h1>
+      <p>Halaman yang kamu cari tidak ada atau sudah dipindahkan.<br>Coba kembali ke dashboard.</p>
+      <div class="actions">
+        <a href="/dashboard" class="btn btn-primary">📊 Ke Dashboard</a>
+        <a href="javascript:history.back()" class="btn btn-ghost">⬅️ Kembali</a>
+      </div>
+    </div>
+  </body>
+</html>
