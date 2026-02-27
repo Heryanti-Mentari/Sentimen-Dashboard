@@ -4,129 +4,614 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard Sentimen JKT48</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #22263a;
+        --border: #2e3348;
+        --accent: #e8445a;
+        --accent2: #f97316;
+        --green: #34d399;
+        --yellow: #facc15;
+        --red: #f87171;
+        --text: #f0f2f8;
+        --muted: #8892b0;
+        --radius: 14px;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 0;
+      }
+
+      /* ── Header ─────────────────────────────────── */
+      header {
+        background: linear-gradient(135deg, #1a0a1e 0%, #0f1117 50%, #0a1020 100%);
+        border-bottom: 1px solid var(--border);
+        padding: 28px 32px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        -webkit-backdrop-filter: blur(12px); 
+        backdrop-filter: blur(12px);
+}
+
+      .header-left h1 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #fff 30%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.5px;
+      }
+
+      .header-left p {
+        color: var(--muted);
+        font-size: 0.8rem;
+        margin-top: 4px;
+      }
+
+      .header-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(232,68,90,0.15);
+        border: 1px solid rgba(232,68,90,0.3);
+        color: var(--accent);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+      }
+
+      .pulse {
+        width: 7px; height: 7px;
+        background: var(--accent);
+        border-radius: 50%;
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.7); }
+      }
+
+      /* ── Main Layout ─────────────────────────────── */
+      main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+      /* ── KPI Cards ───────────────────────────────── */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .kpi-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s, border-color 0.2s;
+      }
+
+      .kpi-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+      .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: var(--radius) var(--radius) 0 0;
+      }
+
+      .kpi-card.total::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+      .kpi-card.pos::before { background: var(--green); }
+      .kpi-card.neu::before { background: var(--yellow); }
+      .kpi-card.neg::before { background: var(--red); }
+
+      .kpi-label { font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+      .kpi-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+      .kpi-card.total .kpi-value { color: #a5b4fc; }
+      .kpi-card.pos .kpi-value { color: var(--green); }
+      .kpi-card.neu .kpi-value { color: var(--yellow); }
+      .kpi-card.neg .kpi-value { color: var(--red); }
+
+      .kpi-sub { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+
+      /* ── Section title ───────────────────────────── */
+      .section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 12px;
+      }
+
+      /* ── Filter & Actions ────────────────────────── */
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+
+      .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        align-items: end;
+      }
+
+      .form-group { display: flex; flex-direction: column; gap: 6px; }
+      .form-group label { font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+
+      input[type="date"],
+      select {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 9px 12px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-family: inherit;
+        width: 100%;
+        transition: border-color 0.2s;
+        -webkit-appearance: none;
+        appearance: none;
+        cursor: pointer;
+      }
+
+      input[type="date"]:focus,
+      select:focus { outline: none; border-color: var(--accent); }
+
+      input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        font-family: inherit;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.15s;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .btn:hover { opacity: 0.87; transform: translateY(-1px); }
+      .btn:active { transform: translateY(0); }
+
+      .btn-primary  { background: var(--accent);  color: #fff; }
+      .btn-purple   { background: #7c3aed; color: #fff; }
+      .btn-green    { background: #059669; color: #fff; }
+      .btn-dark     { background: #374151; color: #fff; }
+      .btn-indigo   { background: #4338ca; color: #fff; }
+      .btn-yellow   { background: #d97706; color: #fff; }
+      .btn-red      { background: #dc2626; color: #fff; }
+
+      /* ── Scrape panel ────────────────────────────── */
+      .scrape-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .scrape-row label { font-size: 0.875rem; color: var(--muted); white-space: nowrap; }
+
+      .scrape-row select { width: auto; min-width: 160px; }
+
+      /* ── Charts Grid ─────────────────────────────── */
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px;
+      }
+
+      .chart-card h2 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: var(--text);
+      }
+
+      .chart-card canvas {
+        max-height: 280px;
+      }
+
+      /* ── Images (wordcloud/trend) ───────────────── */
+      .img-placeholder {
+        width: 100%;
+        aspect-ratio: 16/7;
+        background: var(--surface2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 0.85rem;
+        border: 2px dashed var(--border);
+      }
+
+      .chart-card img {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+      }
+
+      /* ── Action buttons ──────────────────────────── */
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 4px;
+      }
+
+      /* ── Notification toast (demo) ───────────────── */
+      #toast {
+        position: fixed;
+        bottom: 24px; right: 24px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--green);
+        color: var(--text);
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.3s, transform 0.3s;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      #toast.show { opacity: 1; transform: translateY(0); }
+
+      /* ── Responsive ──────────────────────────────── */
+      @media (max-width: 640px) {
+        header { padding: 20px 18px; }
+        main   { padding: 18px; }
+        .kpi-value { font-size: 1.8rem; }
+      }
+    </style>
   </head>
-  <body class="bg-gray-50 p-6 font-sans">
-    <!-- Header -->
-    <header class="mb-6">
-      <h1 class="text-3xl font-bold">📊 Dashboard Analisis Sentimen Fanbase JKT48</h1>
-      <p class="text-gray-600 text-sm mt-1">Data bersifat publik & telah dianonimkan untuk menjaga etika dan privasi.</p>
+  <body>
+
+    <!-- ── Header ──────────────────────────────────── -->
+    <header>
+      <div class="header-left">
+        <h1>📊 Dashboard Sentimen JKT48</h1>
+        <p>Data bersifat publik &amp; telah dianonimkan untuk menjaga etika dan privasi.</p>
+      </div>
+      <div class="header-badge">
+        <span class="pulse"></span>
+        Live Monitoring
+      </div>
     </header>
 
-    <!-- Filter -->
-    <form method="GET" action="/dashboard" class="bg-white rounded shadow p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-      <input type="date" name="start" class="border p-2 rounded w-full" aria-label="Tanggal mulai" />
-      <input type="date" name="end" class="border p-2 rounded w-full" aria-label="Tanggal akhir" />
-      <select name="platform" class="border p-2 rounded w-full" aria-label="Pilih platform">
-        <option value="all">Semua Platform</option>
-        <option value="Twitter">Twitter</option>
-        <option value="Instagram">Instagram</option>
-      </select>
-      <select name="sentimen" class="border p-2 rounded w-full" aria-label="Pilih sentimen">
-        <option value="all">Semua Sentimen</option>
-        <option value="positif">Positif</option>
-        <option value="netral">Netral</option>
-        <option value="negatif">Negatif</option>
-      </select>
-      <div class="md:col-span-4">
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full md:w-auto hover:bg-blue-700 transition">🔍 Terapkan Filter</button>
-      </div>
-    </form>
+    <main>
 
-    <!-- Tombol Ambil Data dari Platform -->
-    <form method="POST" action="/scrape" class="bg-white rounded shadow p-4 mb-6 flex flex-wrap gap-4 items-center">
-      <label for="platform-select" class="text-sm font-medium">Ambil data dari:</label>
-      <select id="platform-select" name="platform" class="border p-2 rounded w-full md:w-auto" aria-label="Pilih platform untuk scraping">
-        <option value="twitter">Twitter</option>
-        <option value="instagram">Instagram</option>
-        <option value="semua">Semua</option>
-      </select>
-      <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded w-full md:w-auto hover:bg-purple-700 transition">📥 Ambil Data</button>
-    </form>
-
-    <!-- Visualisasi -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <!-- Bar Chart -->
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-semibold mb-2">📊 Grafik Jumlah Sentimen</h2>
-        <canvas id="barChart" aria-label="Grafik jumlah sentimen" role="img"></canvas>
+      <!-- ── KPI Cards ──────────────────────────────── -->
+      <div class="kpi-grid">
+        <div class="kpi-card total">
+          <div class="kpi-label">Total Data</div>
+          <div class="kpi-value" id="kpi-total">0</div>
+          <div class="kpi-sub">komentar dikumpulkan</div>
+        </div>
+        <div class="kpi-card pos">
+          <div class="kpi-label">Positif</div>
+          <div class="kpi-value" id="kpi-pos">0</div>
+          <div class="kpi-sub" id="kpi-pos-pct">— %</div>
+        </div>
+        <div class="kpi-card neu">
+          <div class="kpi-label">Netral</div>
+          <div class="kpi-value" id="kpi-neu">0</div>
+          <div class="kpi-sub" id="kpi-neu-pct">— %</div>
+        </div>
+        <div class="kpi-card neg">
+          <div class="kpi-label">Negatif</div>
+          <div class="kpi-value" id="kpi-neg">0</div>
+          <div class="kpi-sub" id="kpi-neg-pct">— %</div>
+        </div>
       </div>
 
-      <!-- Pie Chart -->
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-semibold mb-2">🧁 Proporsi Sentimen</h2>
-        <canvas id="pieChart" aria-label="Diagram proporsi sentimen" role="img"></canvas>
+      <!-- ── Filter Panel ───────────────────────────── -->
+      <div class="panel">
+        <p class="section-title">🔍 Filter Data</p>
+        <form method="GET" action="/dashboard" id="filter-form">
+          <div class="filter-grid">
+            <div class="form-group">
+              <label for="start">Tanggal Mulai</label>
+              <input type="date" id="start" name="start" aria-label="Tanggal mulai" />
+            </div>
+            <div class="form-group">
+              <label for="end">Tanggal Akhir</label>
+              <input type="date" id="end" name="end" aria-label="Tanggal akhir" />
+            </div>
+            <div class="form-group">
+              <label for="platform-filter">Platform</label>
+              <select id="platform-filter" name="platform" aria-label="Pilih platform">
+                <option value="all">Semua Platform</option>
+                <option value="Twitter">Twitter / X</option>
+                <option value="Instagram">Instagram</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="sentimen-filter">Sentimen</label>
+              <select id="sentimen-filter" name="sentimen" aria-label="Pilih sentimen">
+                <option value="all">Semua Sentimen</option>
+                <option value="positif">Positif</option>
+                <option value="netral">Netral</option>
+                <option value="negatif">Negatif</option>
+              </select>
+            </div>
+            <div class="form-group" style="justify-content:flex-end;">
+              <button type="submit" class="btn btn-primary">🔍 Terapkan Filter</button>
+            </div>
+          </div>
+        </form>
       </div>
-    </div>
 
-    <!-- Word Cloud & Tren -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <!-- Word Cloud -->
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-semibold mb-2">☁️ Word Cloud</h2>
-        <img src="/static/wordcloud.png" alt="Word Cloud yang menampilkan kata-kata populer" class="w-full rounded" loading="lazy" />
+      <!-- ── Scrape Panel ───────────────────────────── -->
+      <div class="panel">
+        <p class="section-title">📥 Ambil Data Baru</p>
+        <form method="POST" action="/scrape" class="scrape-row" id="scrape-form">
+          <label for="platform-select">Ambil data dari:</label>
+          <select id="platform-select" name="platform" aria-label="Pilih platform untuk scraping">
+            <option value="twitter">Twitter / X</option>
+            <option value="instagram">Instagram</option>
+            <option value="semua">Semua Platform</option>
+          </select>
+          <button type="submit" class="btn btn-purple">📥 Ambil Data</button>
+        </form>
       </div>
 
-      <!-- Grafik Tren -->
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-semibold mb-2">📈 Tren Sentimen Harian</h2>
-        <img src="/static/trend.png" alt="Grafik tren sentimen harian" class="w-full rounded" loading="lazy" />
+      <!-- ── Charts ─────────────────────────────────── -->
+      <div class="charts-grid">
+        <!-- Bar Chart -->
+        <div class="chart-card">
+          <h2>📊 Jumlah Sentimen</h2>
+          <canvas id="barChart" role="img" aria-label="Grafik batang jumlah sentimen positif, netral, dan negatif"></canvas>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="chart-card">
+          <h2>🧁 Proporsi Sentimen</h2>
+          <canvas id="pieChart" role="img" aria-label="Diagram lingkaran proporsi sentimen"></canvas>
+        </div>
+
+        <!-- Word Cloud -->
+        <div class="chart-card">
+          <h2>☁️ Word Cloud</h2>
+          <!--
+            Jika gambar belum ada, tampilkan placeholder.
+            Gunakan onerror untuk fallback otomatis.
+          -->
+          <img
+            src="/static/wordcloud.png"
+            alt="Word Cloud yang menampilkan kata-kata populer dari data sentimen"
+            loading="lazy"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="img-placeholder" style="display:none;">
+            ⚠️ Gambar belum tersedia — generate terlebih dahulu
+          </div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div class="chart-card">
+          <h2>📈 Tren Sentimen Harian</h2>
+          <img
+            src="/static/trend.png"
+            alt="Grafik tren sentimen harian"
+            loading="lazy"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="img-placeholder" style="display:none;">
+            ⚠️ Grafik tren belum tersedia
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Tombol Aksi -->
-    <div class="flex flex-wrap gap-4">
-      <a href="/detail" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">📋 Lihat Detail Data</a>
-      <a href="/export/csv" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 transition">📥 Ekspor CSV</a>
-      <a href="/export/pdf" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">🧾 Ekspor PDF</a>
-      <a href="/update-data" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">🔄 Update Data</a>
-      <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">🚪 Logout</a>
-    </div>
+      <!-- ── Action Buttons ─────────────────────────── -->
+      <div class="actions">
+        <a href="/detail"     class="btn btn-green">📋 Lihat Detail Data</a>
+        <a href="/export/csv" class="btn btn-dark">📥 Ekspor CSV</a>
+        <a href="/export/pdf" class="btn btn-indigo">🧾 Ekspor PDF</a>
+        <a href="/update-data" class="btn btn-yellow">🔄 Update Data</a>
+        <a href="/logout"     class="btn btn-red">🚪 Logout</a>
+      </div>
 
-    <!-- Script Chart.js -->
+    </main>
+
+    <!-- ── Toast ──────────────────────────────────── -->
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- ── Scripts ────────────────────────────────── -->
     <script>
-      // Data harus diberikan dari backend template engine (misal Flask/Jinja2)
-      // Contoh: render_template('dashboard.html', positif=10, netral=5, negatif=3)
-      const positif = {{ positif | default(0) }};
-      const netral = {{ netral | default(0) }};
-      const negatif = {{ negatif | default(0) }};
+      /* ================================================
+         DATA SENTIMEN
+         -------------------------------------------------
+         Jika menggunakan Flask/Jinja2, ganti blok di bawah
+         dengan:
+           const positif = {{ positif | tojson }};
+           const netral  = {{ netral  | tojson }};
+           const negatif = {{ negatif | tojson }};
 
+         Jika menggunakan API/fetch, panggil endpoint JSON
+         dan isi variabel ini dari response.
+         Saat ini menggunakan data dummy untuk preview.
+      ================================================ */
+
+      // ── Ambil dari URL params (jika backend pass via query) ──
+      const params   = new URLSearchParams(window.location.search);
+      const positif  = parseInt(params.get('positif'))  || 120;
+      const netral   = parseInt(params.get('netral'))   || 45;
+      const negatif  = parseInt(params.get('negatif'))  || 30;
+
+      // ── KPI Cards ──────────────────────────────────────────
+      const total = positif + netral + negatif;
+      const pct   = (n) => total > 0 ? ((n / total) * 100).toFixed(1) + '%' : '— %';
+
+      document.getElementById('kpi-total').textContent = total.toLocaleString('id-ID');
+      document.getElementById('kpi-pos').textContent   = positif.toLocaleString('id-ID');
+      document.getElementById('kpi-neu').textContent   = netral.toLocaleString('id-ID');
+      document.getElementById('kpi-neg').textContent   = negatif.toLocaleString('id-ID');
+      document.getElementById('kpi-pos-pct').textContent = pct(positif);
+      document.getElementById('kpi-neu-pct').textContent = pct(netral);
+      document.getElementById('kpi-neg-pct').textContent = pct(negatif);
+
+      // ── Chart defaults ─────────────────────────────────────
+      Chart.defaults.color = '#8892b0';
+      Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+
+      const COLORS = {
+        green  : '#34d399',
+        yellow : '#facc15',
+        red    : '#f87171',
+      };
+
+      // ── Bar Chart ──────────────────────────────────────────
       const barCtx = document.getElementById('barChart').getContext('2d');
       new Chart(barCtx, {
         type: 'bar',
         data: {
           labels: ['Positif', 'Netral', 'Negatif'],
           datasets: [{
-            label: 'Jumlah Sentimen',
+            label: 'Jumlah Komentar',
             data: [positif, netral, negatif],
-            backgroundColor: ['#34d399', '#facc15', '#f87171']
+            backgroundColor: [
+              'rgba(52,211,153,0.85)',
+              'rgba(250,204,21,0.85)',
+              'rgba(248,113,113,0.85)',
+            ],
+            borderColor: [COLORS.green, COLORS.yellow, COLORS.red],
+            borderWidth: 2,
+            borderRadius: 8,
+            borderSkipped: false,
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.parsed.y.toLocaleString('id-ID')} komentar`
+              }
+            }
+          },
           scales: {
+            x: {
+              grid: { color: '#2e3348' },
+              ticks: { color: '#8892b0', font: { weight: '600' } }
+            },
             y: {
               beginAtZero: true,
-              ticks: { precision: 0 }
+              grid: { color: '#2e3348' },
+              ticks: {
+                precision: 0,
+                color: '#8892b0',
+                callback: val => val.toLocaleString('id-ID')
+              }
             }
           }
         }
       });
 
+      // ── Pie Chart ──────────────────────────────────────────
       const pieCtx = document.getElementById('pieChart').getContext('2d');
       new Chart(pieCtx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
           labels: ['Positif', 'Netral', 'Negatif'],
           datasets: [{
             data: [positif, netral, negatif],
-            backgroundColor: ['#34d399', '#facc15', '#f87171']
+            backgroundColor: [
+              'rgba(52,211,153,0.85)',
+              'rgba(250,204,21,0.85)',
+              'rgba(248,113,113,0.85)',
+            ],
+            borderColor: ['#34d399','#facc15','#f87171'],
+            borderWidth: 2,
+            hoverOffset: 10,
           }]
         },
         options: {
-          responsive: true
+          responsive: true,
+          cutout: '62%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 16,
+                usePointStyle: true,
+                pointStyleWidth: 10,
+                color: '#f0f2f8',
+                font: { weight: '600' }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const val = ctx.parsed;
+                  const tot = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                  return ` ${val.toLocaleString('id-ID')} (${((val/tot)*100).toFixed(1)}%)`;
+                }
+              }
+            }
+          }
         }
+      });
+
+      // ── Toast helper ───────────────────────────────────────
+      function showToast(msg, isError = false) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.borderLeftColor = isError ? '#f87171' : '#34d399';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+      }
+
+      // ── Konfirmasi scrape ──────────────────────────────────
+      document.getElementById('scrape-form').addEventListener('submit', function(e) {
+        const platform = document.getElementById('platform-select').value;
+        const label = { twitter: 'Twitter/X', instagram: 'Instagram', semua: 'semua platform' };
+        showToast(`⏳ Mengambil data dari ${label[platform] || platform}…`);
       });
     </script>
   </body>

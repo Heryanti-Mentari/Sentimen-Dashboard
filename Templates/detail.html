@@ -2,40 +2,595 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <title>Detail Data Sentimen</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detail Data Sentimen — JKT48</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg:       #0f1117;
+        --surface:  #1a1d27;
+        --surface2: #22263a;
+        --border:   #2e3348;
+        --accent:   #e8445a;
+        --green:    #34d399;
+        --yellow:   #facc15;
+        --red:      #f87171;
+        --text:     #f0f2f8;
+        --muted:    #8892b0;
+        --radius:   14px;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* ── Header ─────────────────────── */
+      header {
+        background: linear-gradient(135deg, #1a0a1e 0%, #0f1117 50%, #0a1020 100%);
+        border-bottom: 1px solid var(--border);
+        padding: 22px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-left h1 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #fff 30%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.4px;
+      }
+
+      .header-left p {
+        color: var(--muted);
+        font-size: 0.78rem;
+        margin-top: 3px;
+      }
+
+      /* ── Main ───────────────────────── */
+      main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+      /* ── Controls bar ───────────────── */
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .search-wrap {
+        position: relative;
+        flex: 1 1 220px;
+        max-width: 320px;
+      }
+
+      .search-wrap svg {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+        width: 15px; height: 15px;
+      }
+
+      .search-wrap input {
+        width: 100%;
+        padding: 9px 12px 9px 34px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.85rem;
+        font-family: inherit;
+        transition: border-color 0.2s;
+      }
+
+      .search-wrap input:focus { outline: none; border-color: var(--accent); }
+      .search-wrap input::placeholder { color: var(--muted); }
+
+      select.ctrl {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 9px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-family: inherit;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      select.ctrl:focus { outline: none; border-color: var(--accent); }
+
+      .count-badge {
+        margin-left: auto;
+        font-size: 0.78rem;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .count-badge span { color: var(--text); font-weight: 700; }
+
+      /* ── Table wrapper ──────────────── */
+      .table-wrap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+        min-width: 640px;
+      }
+
+      thead {
+        background: var(--surface2);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+
+      thead th {
+        padding: 13px 16px;
+        text-align: left;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: pointer;
+      }
+
+      thead th:hover { color: var(--text); }
+
+      thead th .sort-icon { display: inline-block; margin-left: 4px; opacity: 0.4; transition: opacity 0.2s; }
+      thead th.sort-asc  .sort-icon,
+      thead th.sort-desc .sort-icon { opacity: 1; color: var(--accent); }
+
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+        animation: rowIn 0.25s ease both;
+      }
+
+      tbody tr:last-child { border-bottom: none; }
+      tbody tr:hover { background: var(--surface2); }
+
+      @keyframes rowIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      td {
+        padding: 13px 16px;
+        color: var(--text);
+        vertical-align: top;
+      }
+
+      td.date   { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+      td.likes  { color: var(--muted); white-space: nowrap; }
+
+      /* Platform badge */
+      .platform-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+
+      .platform-badge.twitter   { background: rgba(29,155,240,0.15); color: #1d9bf0; border: 1px solid rgba(29,155,240,0.3); }
+      .platform-badge.instagram { background: rgba(225,48,108,0.15); color: #e1306c; border: 1px solid rgba(225,48,108,0.3); }
+      .platform-badge.other     { background: rgba(136,146,176,0.15); color: var(--muted); border: 1px solid var(--border); }
+
+      /* Sentiment badge */
+      .sent-badge {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 999px;
+        text-transform: capitalize;
+        white-space: nowrap;
+      }
+
+      .sent-badge.positif  { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.35); }
+      .sent-badge.netral   { background: rgba(250,204,21,0.15);  color: var(--yellow); border: 1px solid rgba(250,204,21,0.35); }
+      .sent-badge.negatif  { background: rgba(248,113,113,0.15); color: var(--red);  border: 1px solid rgba(248,113,113,0.35); }
+
+      /* Comment text */
+      td.komentar {
+        max-width: 380px;
+        word-break: break-word;
+        line-height: 1.55;
+        color: #c9d1e9;
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+      }
+
+      .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+      .empty-state p { font-size: 0.875rem; }
+
+      /* ── Pagination ─────────────────── */
+      .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 22px;
+        flex-wrap: wrap;
+      }
+
+      .page-btn {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+      }
+
+      .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+      .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+      /* ── Back button ────────────────── */
+      .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        font-family: inherit;
+        text-decoration: none;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        margin-top: 24px;
+      }
+
+      .btn-back:hover { border-color: var(--accent); background: var(--surface2); }
+
+      /* ── Responsive ─────────────────── */
+      @media (max-width: 640px) {
+        header { padding: 16px 18px; }
+        main   { padding: 16px 18px; }
+      }
+    </style>
   </head>
-  <body class="bg-gray-100 p-6 font-sans">
-    <h1 class="text-2xl font-bold mb-2">📋 Detail Komentar Fanbase JKT48</h1>
-    <p class="text-gray-600 text-sm mb-4">Data berikut adalah hasil analisis sentimen publik terhadap JKT48 yang bersumber dari media sosial dan telah dianonimkan.</p>
+  <body>
 
-    <div class="overflow-x-auto bg-white rounded shadow">
-      <table class="min-w-full text-sm">
-        <thead class="bg-gray-200 text-left">
-          <tr>
-            <th class="px-4 py-2">Tanggal</th>
-            <th class="px-4 py-2">Platform</th>
-            <th class="px-4 py-2">Sentimen</th>
-            <th class="px-4 py-2">Komentar</th>
-            <th class="px-4 py-2">Likes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in data %}
-          <tr class="border-t hover:bg-gray-50">
-            <td class="px-4 py-2">{{ row.tanggal }}</td>
-            <td class="px-4 py-2">{{ row.platform }}</td>
-            <td class="px-4 py-2 font-semibold {% if row.sentimen == 'positif' %}text-green-600{% elif row.sentimen == 'netral' %}text-yellow-600{% else %}text-red-500{% endif %}">{{ row.sentimen|capitalize }}</td>
-            <td class="px-4 py-2 text-gray-800 max-w-xs break-words">{{ row.komentar }}</td>
-            <td class="px-4 py-2">{{ row.likes }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <!-- ── Header ──────────────────────────────── -->
+    <header>
+      <div class="header-left">
+        <h1>📋 Detail Komentar Fanbase JKT48</h1>
+        <p>Data bersifat publik &amp; telah dianonimkan untuk menjaga etika dan privasi.</p>
+      </div>
+    </header>
 
-    <div class="mt-6">
-      <a href="/dashboard" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"> ⬅️ Kembali ke Dashboard </a>
-    </div>
+    <main>
+
+      <!-- ── Controls ────────────────────────────── -->
+      <div class="controls">
+        <!-- Search -->
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input type="search" id="searchInput" placeholder="Cari komentar…" aria-label="Cari komentar" />
+        </div>
+
+        <!-- Filter platform -->
+        <select class="ctrl" id="filterPlatform" aria-label="Filter platform">
+          <option value="">Semua Platform</option>
+          <option value="Twitter">Twitter / X</option>
+          <option value="Instagram">Instagram</option>
+        </select>
+
+        <!-- Filter sentimen -->
+        <select class="ctrl" id="filterSentimen" aria-label="Filter sentimen">
+          <option value="">Semua Sentimen</option>
+          <option value="positif">Positif</option>
+          <option value="netral">Netral</option>
+          <option value="negatif">Negatif</option>
+        </select>
+
+        <!-- Row count per page -->
+        <select class="ctrl" id="perPage" aria-label="Baris per halaman">
+          <option value="10">10 baris</option>
+          <option value="25" selected>25 baris</option>
+          <option value="50">50 baris</option>
+        </select>
+
+        <div class="count-badge">Menampilkan <span id="showCount">0</span> dari <span id="totalCount">0</span></div>
+      </div>
+
+      <!-- ── Table ────────────────────────────────── -->
+      <div class="table-wrap">
+        <table id="dataTable" aria-label="Tabel detail komentar sentimen JKT48">
+          <thead>
+            <tr>
+              <th data-col="tanggal" tabindex="0">Tanggal <span class="sort-icon">↕</span></th>
+              <th data-col="platform" tabindex="0">Platform <span class="sort-icon">↕</span></th>
+              <th data-col="sentimen" tabindex="0">Sentimen <span class="sort-icon">↕</span></th>
+              <th>Komentar</th>
+              <th data-col="likes" tabindex="0">Likes <span class="sort-icon">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Diisi oleh JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Pagination ───────────────────────────── -->
+      <div class="pagination" id="pagination" aria-label="Navigasi halaman"></div>
+
+      <!-- ── Back button ──────────────────────────── -->
+      <a href="/dashboard" class="btn-back">⬅️ Kembali ke Dashboard</a>
+
+    </main>
+
+    <script>
+      /* ================================================
+         DATA
+         -------------------------------------------------
+         Saat di-deploy dengan Flask/Jinja2, ganti variabel
+         `ROWS` dengan:
+
+           const ROWS = {{ data | tojson }};
+
+         Setiap objek harus memiliki key:
+           tanggal, platform, sentimen, komentar, likes
+
+         Untuk saat ini, data dummy digunakan sebagai preview.
+      ================================================ */
+
+      const ROWS = [
+        { tanggal: '2025-07-01', platform: 'Twitter',   sentimen: 'positif', komentar: 'JKT48 selalu amazing! Penampilan kemarin di konser bikin nangis haru 😭❤️', likes: 412 },
+        { tanggal: '2025-07-01', platform: 'Instagram', sentimen: 'netral',  komentar: 'Foto profil member baru sudah diupdate di website resmi.', likes: 89 },
+        { tanggal: '2025-07-02', platform: 'Twitter',   sentimen: 'negatif', komentar: 'Tiket sold out dalam 5 menit, sistem pembeliannya benar-benar mengecewakan.', likes: 230 },
+        { tanggal: '2025-07-02', platform: 'Instagram', sentimen: 'positif', komentar: 'Outfit handshake kali ini keren banget, desainernya kece!', likes: 674 },
+        { tanggal: '2025-07-03', platform: 'Twitter',   sentimen: 'positif', komentar: 'Stage performance malam ini 10/10 tidak ada yang bisa menandingi energi mereka di panggung!', likes: 521 },
+        { tanggal: '2025-07-03', platform: 'Twitter',   sentimen: 'negatif', komentar: 'Sound system di venue sangat buruk, suara member tidak terdengar jelas sama sekali.', likes: 188 },
+        { tanggal: '2025-07-04', platform: 'Instagram', sentimen: 'netral',  komentar: 'Jadwal senbatsu untuk single berikutnya belum diumumkan.', likes: 42 },
+        { tanggal: '2025-07-04', platform: 'Twitter',   sentimen: 'positif', komentar: 'Oshi saya berhasil masuk senbatsu untuk pertama kalinya! Bangga banget!!', likes: 883 },
+        { tanggal: '2025-07-05', platform: 'Instagram', sentimen: 'negatif', komentar: 'Merchandise yang dikirim rusak dan packing sangat tidak aman, mohon diperbaiki.', likes: 301 },
+        { tanggal: '2025-07-05', platform: 'Twitter',   sentimen: 'netral',  komentar: 'Single ke-30 sudah tersedia di semua platform streaming mulai hari ini.', likes: 155 },
+        { tanggal: '2025-07-06', platform: 'Instagram', sentimen: 'positif', komentar: 'Meet & greet dengan member tadi luar biasa, mereka sangat ramah dan hangat!', likes: 734 },
+        { tanggal: '2025-07-06', platform: 'Twitter',   sentimen: 'positif', komentar: 'Koreografi lagu baru benar-benar segar dan berbeda dari biasanya, suka banget!', likes: 469 },
+        { tanggal: '2025-07-07', platform: 'Instagram', sentimen: 'netral',  komentar: 'Theater JKT48 akan tutup sementara untuk renovasi selama dua minggu ke depan.', likes: 77 },
+        { tanggal: '2025-07-07', platform: 'Twitter',   sentimen: 'negatif', komentar: 'Kenapa harga tiket terus naik? Sudah tidak terjangkau untuk fans biasa seperti kami.', likes: 412 },
+        { tanggal: '2025-07-08', platform: 'Twitter',   sentimen: 'positif', komentar: 'Kolaborasi dengan brand lokal ini sungguh keren, proud of JKT48!', likes: 596 },
+        { tanggal: '2025-07-08', platform: 'Instagram', sentimen: 'netral',  komentar: 'Lineup event anniversary JKT48 tahun ini sangat padat dan beragam.', likes: 201 },
+        { tanggal: '2025-07-09', platform: 'Twitter',   sentimen: 'positif', komentar: 'Live streaming theater malam ini kualitasnya jauh lebih baik dari sebelumnya!', likes: 338 },
+        { tanggal: '2025-07-09', platform: 'Instagram', sentimen: 'negatif', komentar: 'Respon customer service sangat lambat, sudah tiga hari belum ada balasan.', likes: 145 },
+        { tanggal: '2025-07-10', platform: 'Twitter',   sentimen: 'positif', komentar: 'Anniversary concert kemarin adalah yang terbaik sepanjang masa! Terima kasih JKT48 🎉', likes: 1024 },
+        { tanggal: '2025-07-10', platform: 'Instagram', sentimen: 'netral',  komentar: 'Foto behind the scene anniversary sudah diupload di akun resmi Instagram.', likes: 318 },
+      ];
+
+      /* ── State ─────────────────────────────────── */
+      let filteredRows = [...ROWS];
+      let sortCol      = 'tanggal';
+      let sortDir      = 'desc';
+      let currentPage  = 1;
+      let perPage      = 25;
+
+      /* ── Helpers ───────────────────────────────── */
+      function platformClass(p) {
+        const l = (p || '').toLowerCase();
+        if (l.includes('twitter')) return 'twitter';
+        if (l.includes('instagram')) return 'instagram';
+        return 'other';
+      }
+
+      function platformIcon(p) {
+        const l = (p || '').toLowerCase();
+        if (l.includes('twitter')) return '𝕏';
+        if (l.includes('instagram')) return '◈';
+        return '●';
+      }
+
+      /* ── Render table ──────────────────────────── */
+      function render() {
+        const tbody   = document.getElementById('tableBody');
+        const total   = filteredRows.length;
+        const pages   = Math.max(1, Math.ceil(total / perPage));
+        currentPage   = Math.min(currentPage, pages);
+        const start   = (currentPage - 1) * perPage;
+        const slice   = filteredRows.slice(start, start + perPage);
+
+        document.getElementById('totalCount').textContent = total.toLocaleString('id-ID');
+        document.getElementById('showCount').textContent  = slice.length.toLocaleString('id-ID');
+
+        if (slice.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <div class="icon">🔍</div>
+                  <p>Tidak ada data yang cocok dengan filter yang dipilih.</p>
+                </div>
+              </td>
+            </tr>`;
+        } else {
+          tbody.innerHTML = slice.map((row, i) => {
+            const sent  = (row.sentimen || '').toLowerCase();
+            const pCls  = platformClass(row.platform);
+            const delay = `animation-delay:${i * 25}ms`;
+            return `
+              <tr style="${delay}">
+                <td class="date">${row.tanggal || '—'}</td>
+                <td>
+                  <span class="platform-badge ${pCls}">
+                    ${platformIcon(row.platform)} ${row.platform || '—'}
+                  </span>
+                </td>
+                <td>
+                  <span class="sent-badge ${sent}">${sent.charAt(0).toUpperCase() + sent.slice(1) || '—'}</span>
+                </td>
+                <td class="komentar">${escapeHtml(row.komentar || '')}</td>
+                <td class="likes">❤️ ${Number(row.likes || 0).toLocaleString('id-ID')}</td>
+              </tr>`;
+          }).join('');
+        }
+
+        renderPagination(pages);
+        updateSortHeaders();
+      }
+
+      function escapeHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      /* ── Pagination ────────────────────────────── */
+      function renderPagination(pages) {
+        const el = document.getElementById('pagination');
+        if (pages <= 1) { el.innerHTML = ''; return; }
+
+        let html = `<button class="page-btn" id="pg-prev" aria-label="Halaman sebelumnya" ${currentPage===1 ? 'disabled' : ''}>‹</button>`;
+
+        const range = pageRange(currentPage, pages);
+        range.forEach(p => {
+          if (p === '…') {
+            html += `<span class="page-btn" style="cursor:default;opacity:.4">…</span>`;
+          } else {
+            html += `<button class="page-btn ${p===currentPage ? 'active' : ''}" data-pg="${p}">${p}</button>`;
+          }
+        });
+
+        html += `<button class="page-btn" id="pg-next" aria-label="Halaman berikutnya" ${currentPage===pages ? 'disabled' : ''}>›</button>`;
+        el.innerHTML = html;
+
+        el.querySelectorAll('[data-pg]').forEach(btn => {
+          btn.addEventListener('click', () => { currentPage = +btn.dataset.pg; render(); });
+        });
+        el.querySelector('#pg-prev')?.addEventListener('click', () => { currentPage--; render(); });
+        el.querySelector('#pg-next')?.addEventListener('click', () => { currentPage++; render(); });
+      }
+
+      function pageRange(cur, total) {
+        if (total <= 7) return Array.from({length: total}, (_,i) => i+1);
+        if (cur <= 4)  return [1,2,3,4,5,'…',total];
+        if (cur >= total-3) return [1,'…',total-4,total-3,total-2,total-1,total];
+        return [1,'…',cur-1,cur,cur+1,'…',total];
+      }
+
+      /* ── Sort ──────────────────────────────────── */
+      function sortData(col) {
+        if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+        else { sortCol = col; sortDir = 'asc'; }
+
+        filteredRows.sort((a, b) => {
+          let va = a[col], vb = b[col];
+          if (col === 'likes') { va = +va || 0; vb = +vb || 0; return sortDir === 'asc' ? va-vb : vb-va; }
+          va = String(va || '').toLowerCase();
+          vb = String(vb || '').toLowerCase();
+          return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        });
+
+        currentPage = 1;
+        render();
+      }
+
+      function updateSortHeaders() {
+        document.querySelectorAll('thead th[data-col]').forEach(th => {
+          th.classList.remove('sort-asc', 'sort-desc');
+          const icon = th.querySelector('.sort-icon');
+          icon.textContent = '↕';
+          if (th.dataset.col === sortCol) {
+            th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+            icon.textContent = sortDir === 'asc' ? '↑' : '↓';
+          }
+        });
+      }
+
+      /* ── Filter ────────────────────────────────── */
+      function applyFilters() {
+        const q   = document.getElementById('searchInput').value.toLowerCase().trim();
+        const plt = document.getElementById('filterPlatform').value;
+        const snt = document.getElementById('filterSentimen').value;
+
+        filteredRows = ROWS.filter(row => {
+          const matchQ   = !q   || (row.komentar || '').toLowerCase().includes(q);
+          const matchPlt = !plt || (row.platform || '').toLowerCase() === plt.toLowerCase();
+          const matchSnt = !snt || (row.sentimen || '').toLowerCase() === snt.toLowerCase();
+          return matchQ && matchPlt && matchSnt;
+        });
+
+        // Re-sort the new filtered set
+        filteredRows.sort((a, b) => {
+          let va = a[sortCol], vb = b[sortCol];
+          if (sortCol === 'likes') { va = +va||0; vb = +vb||0; return sortDir==='asc' ? va-vb : vb-va; }
+          va = String(va||'').toLowerCase(); vb = String(vb||'').toLowerCase();
+          return sortDir==='asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        });
+
+        currentPage = 1;
+        render();
+      }
+
+      /* ── Event listeners ───────────────────────── */
+      document.getElementById('searchInput').addEventListener('input', applyFilters);
+      document.getElementById('filterPlatform').addEventListener('change', applyFilters);
+      document.getElementById('filterSentimen').addEventListener('change', applyFilters);
+      document.getElementById('perPage').addEventListener('change', function() {
+        perPage = +this.value; currentPage = 1; render();
+      });
+
+      document.querySelectorAll('thead th[data-col]').forEach(th => {
+        th.addEventListener('click', () => sortData(th.dataset.col));
+        th.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') sortData(th.dataset.col); });
+      });
+
+      /* ── Init ──────────────────────────────────── */
+      sortData('tanggal'); // default sort by date desc
+    </script>
   </body>
 </html>
